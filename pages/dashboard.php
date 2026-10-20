@@ -20,6 +20,7 @@ require_once __DIR__ . '/../db/connect.php';
         }
     });
     </script>   
+    <link rel="icon" type="image/png" href="../css/images/logo.png">
 </head>
 <body>
 

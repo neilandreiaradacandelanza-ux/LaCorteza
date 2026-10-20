@@ -51,6 +51,7 @@ $blocked_schedules = $conn->query("SELECT * FROM schedules ORDER BY blocked_date
     <title>Maintenance & Schedule Blockouts - La Corteza</title>
     <link rel="stylesheet" href="../css/style.css?v=<?php echo time(); ?>">
 
+    <link rel="icon" type="image/png" href="../css/images/logo.png">
 </head>
 <body>
 

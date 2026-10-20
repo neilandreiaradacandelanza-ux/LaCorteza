@@ -80,6 +80,7 @@
         <meta charset="UTF-8">
         <title>Login - La Corteza</title>
         <link rel="stylesheet" href="../css/style.css?v=<?php echo time(); ?>">
+        <link rel="icon" type="image/png" href="../css/images/logo.png">
     </head>
     <body>
         <div class="login-card">

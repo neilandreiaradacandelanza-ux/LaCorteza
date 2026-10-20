@@ -59,6 +59,7 @@ $preselected_package =$_GET['package'] ?? $form['package_type'] ?? '';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Now - La Corteza Pool & Venue</title>
     <link rel="stylesheet" href="../css/style.css?v=<?php echo time(); ?>">
+    <link rel="icon" type="image/png" href="../css/images/logo.png">
 </head>
 <body>
 

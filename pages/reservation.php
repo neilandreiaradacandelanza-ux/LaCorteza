@@ -56,6 +56,7 @@ if ($user_id) {
             background-color: #543a27;
         }
     </style>
+    <link rel="icon" type="image/png" href="../css/images/logo.png">
 </head>
 <body>
 

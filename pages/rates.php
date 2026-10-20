@@ -15,6 +15,7 @@ $query = mysqli_query($connect2db, "SELECT * FROM packages WHERE status = 'Activ
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rates & Packages - La Corteza Pool & Venue</title>
     <link rel="stylesheet" href="../css/style.css?v=<?php echo time(); ?>">
+    <link rel="icon" type="image/png" href="../css/images/logo.png">
 </head>
 <body>
 

@@ -150,6 +150,7 @@ function feature_label($feature) {
     <title>Manage Rates &amp; Packages - Admin Dashboard</title>
     <link rel="stylesheet" href="../css/style.css?v=<?php echo time(); ?>">
     
+    <link rel="icon" type="image/png" href="../css/images/logo.png">
 </head>
 <body>
 

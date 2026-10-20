@@ -65,6 +65,7 @@ $result = $conn->query($query);
             flex-wrap: wrap;
         }
     </style>
+    <link rel="icon" type="image/png" href="../css/images/logo.png">
 </head>
 <body>
 

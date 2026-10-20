@@ -57,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title>Register</title>
     <link rel="stylesheet" href="../css/style.css?v=<?php echo time(); ?>">
+    <link rel="icon" type="image/png" href="../css/images/logo.png">
 </head>
 <body>
     <div class="login-card">

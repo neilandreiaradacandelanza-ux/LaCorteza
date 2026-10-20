@@ -56,6 +56,7 @@ $downpayment_amount = round($total_amount * 0.50, 2);
             min-height: 20px;
         }
     </style>
+    <link rel="icon" type="image/png" href="../css/images/logo.png">
 </head>
 <body>
 
