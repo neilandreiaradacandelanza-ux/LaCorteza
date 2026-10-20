@@ -13,6 +13,12 @@
         unset($_SESSION['success_msg']);
     }
 
+    // Page to return to after login (only local pages like "book-now.php?package=...")
+    $redirect = $_GET['redirect'] ?? $_POST['redirect'] ?? '';
+    if (!preg_match('/^[a-z-]+\.php(\?[\w%=&.+-]*)?$/i', $redirect)) {
+        $redirect = '';
+    }
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $login_input = trim($_POST['login_input'] ?? '');
         $password    = $_POST['password'] ?? '';
@@ -56,8 +62,8 @@
                             'email' => $user['email']
                         ];
 
-                        // Redirect to Customer Dashboard / Home
-                        header("Location: dashboard.php");
+                        // Redirect back to the page that required login, or to Customer Dashboard / Home
+                        header("Location: " . ($redirect ?: "dashboard.php"));
                         exit();
                     }
                 }
@@ -91,13 +97,14 @@
             <form action="login.php" method="POST" style="display: flex; flex-direction: column; gap: 12px;">
                 <input type="text" name="login_input" placeholder="Username or Email" required>
                 <input type="password" name="password" placeholder="Password" required>
+                <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($redirect); ?>">
 
                 <button type="submit">Login</button>
             </form>
 
             <div class="links">
                 <a href="forgot-password.php">Forgot Password?</a>
-                <a href="register.php">Register here</a>
+                <a href="register.php<?php echo $redirect ? '?redirect=' . urlencode($redirect) : ''; ?>">Register here</a>
             </div>
         </div>
     </body>

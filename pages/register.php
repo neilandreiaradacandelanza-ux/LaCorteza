@@ -4,6 +4,12 @@ require_once __DIR__ . '/../db/connect.php';
 $error = '';
 $success = '';
 
+// Carry the "return to" page through registration so login can send the user back (e.g. to book-now.php)
+$redirect = $_GET['redirect'] ?? $_POST['redirect'] ?? '';
+if (!preg_match('/^[a-z-]+\.php(\?[\w%=&.+-]*)?$/i', $redirect)) {
+    $redirect = '';
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $firstname        = trim($_POST['firstname'] ?? '');
     $lastname         = trim($_POST['lastname'] ?? '');
@@ -35,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (mysqli_stmt_execute($insert_stmt)) {
                 $_SESSION['success_msg'] = "Registration successful! Please log in.";
-                header("Location: login.php");
+                header("Location: login.php" . ($redirect ? '?redirect=' . urlencode($redirect) : ''));
                 exit();
             } else {
                 $error = "Something went wrong. Please try again.";
@@ -67,12 +73,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
             <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+            <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($redirect); ?>">
 
             <button type="submit">Register</button>
         </form>
 
         <div class="links single">
-            <a href="login.php">Already have an account? Login here</a>
+            <a href="login.php<?php echo $redirect ? '?redirect=' . urlencode($redirect) : ''; ?>">Already have an account? Login here</a>
         </div>
     </div>
 </body>

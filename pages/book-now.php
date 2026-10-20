@@ -5,6 +5,14 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once __DIR__ . '/../db/connect.php';
 require_once __DIR__ . '/../functions/auth_functions.php';
 
+// Booking requires a customer account; send guests to login and bring them back here afterwards
+if (empty($_SESSION['user_id'])) {
+    $_SESSION['success_msg'] = "Please log in or create an account to book a reservation.";
+    $back = 'book-now.php' . (isset($_GET['package']) ? '?package=' . urlencode($_GET['package']) : '');
+    header("Location: login.php?redirect=" . urlencode($back));
+    exit();
+}
+
 $result = '';$resultClass = '';
 
 // Handle Booking Submit using auth_function

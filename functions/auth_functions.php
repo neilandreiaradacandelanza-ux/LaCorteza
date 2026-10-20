@@ -170,56 +170,13 @@ function book_reservation($data, $connect2db, &$result, &$resultClass)
         mysqli_stmt_close($stmtCheck);
     }
 
-    // 2. Get user_id from session or create new account for guest
+    // 2. Booking requires a logged-in customer (book-now.php redirects guests to login)
     $user_id = $_SESSION['user_id'] ?? $_SESSION['user']['id'] ?? null;
 
     if (!$user_id) {
-        $stmtEmailCheck = mysqli_prepare($connect2db, "SELECT id FROM accounts WHERE email = ? LIMIT 1");
-        if ($stmtEmailCheck) {
-            mysqli_stmt_bind_param($stmtEmailCheck, "s", $email);
-            mysqli_stmt_execute($stmtEmailCheck);
-            $check = mysqli_stmt_get_result($stmtEmailCheck);
-
-            if ($check && mysqli_num_rows($check) > 0) {
-                $user_id = mysqli_fetch_assoc($check)['id'];
-            } else {
-                $nameParts = explode(' ', $full_name, 2);
-                $firstname = $nameParts[0];
-                $lastname  = $nameParts[1] ?? '';
-                $username  = $email;
-                $hashedPassword = password_hash('LaCorteza2026!', PASSWORD_DEFAULT);
-
-                $stmtAcc = mysqli_prepare($connect2db, "
-                    INSERT INTO accounts (firstname, lastname, full_name, username, email, password, confirm_password, role) 
-                    VALUES (?, ?, ?, ?, ?, ?, '', 'customer')
-                ");
-                if ($stmtAcc) {
-                    mysqli_stmt_bind_param($stmtAcc, "ssssss", $firstname, $lastname, $full_name, $username, $email, $hashedPassword);
-
-                    if (mysqli_stmt_execute($stmtAcc)) {
-                        $user_id = mysqli_insert_id($connect2db);
-                        $_SESSION['user_id'] = $user_id;
-
-                        $stmtCust = mysqli_prepare($connect2db, "
-                            INSERT INTO customer (account_id, firstname, lastname, full_name, username, email, password) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?)
-                        ");
-                        if ($stmtCust) {
-                            mysqli_stmt_bind_param($stmtCust, "issssss", $user_id, $firstname, $lastname, $full_name, $username, $email, $hashedPassword);
-                            mysqli_stmt_execute($stmtCust);
-                            mysqli_stmt_close($stmtCust);
-                        }
-                    } else {
-                        $resultClass = "error";
-                        $result = "Account creation failed: " . mysqli_stmt_error($stmtAcc);
-                        mysqli_stmt_close($stmtAcc);
-                        return;
-                    }
-                    mysqli_stmt_close($stmtAcc);
-                }
-            }
-            mysqli_stmt_close($stmtEmailCheck);
-        }
+        $resultClass = "error";
+        $result = "Please log in to book a reservation.";
+        return;
     }
 
     // 3. Compute total amount
