@@ -5,20 +5,31 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once __DIR__ . '/../db/connect.php';
 require_once __DIR__ . '/../functions/auth_functions.php';
 
-// Booking requires a customer account; send guests to login and bring them back here afterwards
-if (empty($_SESSION['user_id'])) {
-    $_SESSION['success_msg'] = "Please log in or create an account to book a reservation.";
-    $back = 'book-now.php' . (isset($_GET['package']) ? '?package=' . urlencode($_GET['package']) : '');
-    header("Location: login.php?redirect=" . urlencode($back));
-    exit();
-}
-
 $result = '';$resultClass = '';
+$booking_fields = ['full_name', 'email', 'phone', 'reservation_date', 'shift', 'guest_count', 'package_type'];
 
 // Handle Booking Submit using auth_function
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_booking'])) {
+    if (empty($_SESSION['user_id'])) {
+        // Guests can fill in the form, but must log in to book: keep their details and send them to login
+        $_SESSION['pending_booking'] = array_intersect_key($_POST, array_flip($booking_fields));
+        $_SESSION['success_msg'] = "Please log in or create an account to complete your booking. Your booking details have been saved.";
+        header("Location: login.php?redirect=book-now.php");
+        exit();
+    }
+    unset($_SESSION['pending_booking']);
     book_reservation($_POST,$connect2db, $result,$resultClass);
 }
+
+// Values to refill the form with: the just-submitted form (after an error) or details saved before login
+$form = ($_SERVER['REQUEST_METHOD'] === 'POST') ? $_POST : ($_SESSION['pending_booking'] ?? []);
+if (!empty($_SESSION['pending_booking']) && !empty($_SESSION['user_id']) && empty($result)) {
+    $resultClass = "success";
+    $result = "Welcome back! Your booking details were restored. Please review them and click Confirm & Proceed to Payment.";
+}
+$old = function ($field, $default = '') use ($form) {
+    return htmlspecialchars($form[$field] ?? $default);
+};
 
 // Fetch active packages created by Admin from database
 $packages_query = mysqli_query($connect2db, "SELECT * FROM packages WHERE status = 'Active' ORDER BY id ASC");
@@ -39,7 +50,7 @@ if ($schedules_query) {
 }
 
 // Check if a package was passed via URL parameter
-$preselected_package =$_GET['package'] ?? '';
+$preselected_package =$_GET['package'] ?? $form['package_type'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -100,17 +111,17 @@ $preselected_package =$_GET['package'] ?? '';
 
                     <div class="form-group margin-bottom-md">
                         <label for="full_name">Full Name</label>
-                        <input type="text" id="full_name" name="full_name" class="form-input" placeholder="e.g. Neil Andrei Candelanza" value="<?php echo htmlspecialchars($_SESSION['user']['firstname'] ?? '') . ' ' . htmlspecialchars($_SESSION['user']['lastname'] ?? ''); ?>" required>
+                        <input type="text" id="full_name" name="full_name" class="form-input" placeholder="e.g. Neil Andrei Candelanza" value="<?php echo $old('full_name', trim(($_SESSION['user']['firstname'] ?? '') . ' ' . ($_SESSION['user']['lastname'] ?? ''))); ?>" required>
                     </div>
 
                     <div class="form-grid-2 margin-bottom-md">
                         <div class="form-group">
                             <label for="email">Email Address</label>
-                            <input type="email" id="email" name="email" class="form-input" placeholder="e.g. neil@example.com" value="<?php echo htmlspecialchars($_SESSION['user']['email'] ?? ''); ?>" required>
+                            <input type="email" id="email" name="email" class="form-input" placeholder="e.g. neil@example.com" value="<?php echo $old('email', $_SESSION['user']['email'] ?? ''); ?>" required>
                         </div>
                         <div class="form-group">
                             <label for="phone">Mobile / Phone Number</label>
-                            <input type="tel" id="phone" name="phone" class="form-input" placeholder="e.g. 09817088574" required>
+                            <input type="tel" id="phone" name="phone" class="form-input" placeholder="e.g. 09817088574" value="<?php echo $old('phone'); ?>" required>
                         </div>
                     </div>
 
@@ -123,21 +134,21 @@ $preselected_package =$_GET['package'] ?? '';
                     <div class="form-grid-2 margin-bottom-md">
                         <div class="form-group">
                             <label for="reservation_date">Reservation Date</label>
-                            <input type="date" id="reservation_date" name="reservation_date" class="form-input" required min="<?php echo date('Y-m-d'); ?>">
+                            <input type="date" id="reservation_date" name="reservation_date" class="form-input" value="<?php echo $old('reservation_date'); ?>" required min="<?php echo date('Y-m-d'); ?>">
                         </div>
                         <div class="form-group">
                             <label for="shift">Preferred Shift</label>
                             <select id="shift" name="shift" class="form-input" required>
-                                <option value="Day Shift (8:00 AM - 5:00 PM)">Day Shift (8:00 AM - 5:00 PM)</option>
-                                <option value="Night Shift (6:00 PM - 12:00 MN)">Night Shift (6:00 PM - 12:00 MN)</option>
-                                <option value="24 Hours Exclusive">24 Hours Exclusive</option>
+                                <?php foreach (['Day Shift (8:00 AM - 5:00 PM)', 'Night Shift (6:00 PM - 12:00 MN)', '24 Hours Exclusive'] as $shift_option): ?>
+                                    <option value="<?php echo $shift_option; ?>" <?php echo ($form['shift'] ?? '') === $shift_option ? 'selected' : ''; ?>><?php echo $shift_option; ?></option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                     </div>
 
                     <div class="form-group margin-bottom-md">
                         <label for="guest_count">Estimated Number of Guests</label>
-                        <input type="number" id="guest_count" name="guest_count" class="form-input" placeholder="e.g. 30" min="1" max="150" required>
+                        <input type="number" id="guest_count" name="guest_count" class="form-input" placeholder="e.g. 30" min="1" max="150" value="<?php echo $old('guest_count'); ?>" required>
                     </div>
 
                     <div class="summary-divider" style="margin: 24px 0;"></div>
