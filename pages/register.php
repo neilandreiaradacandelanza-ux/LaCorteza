@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             // Hash password and insert user into accounts table
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $insert_stmt = mysqli_prepare($connect2db, "INSERT INTO accounts (firstname, lastname, email, username, password) VALUES (?, ?, ?, ?, ?)");
+            $insert_stmt = mysqli_prepare($connect2db, "INSERT INTO accounts (firstname, lastname, email, username, password, confirm_password) VALUES (?, ?, ?, ?, ?, '')");
             mysqli_stmt_bind_param($insert_stmt, "sssss", $firstname, $lastname, $email, $username, $hashed_password);
 
             if (mysqli_stmt_execute($insert_stmt)) {

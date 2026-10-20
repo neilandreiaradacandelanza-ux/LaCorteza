@@ -13,8 +13,8 @@ function register($data, $connect2db, &$result, &$resultClass)
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
     $stmt = mysqli_prepare($connect2db, "
-        INSERT INTO accounts (firstname, lastname, full_name, username, email, password, role)
-        VALUES (?, ?, ?, ?, ?, ?, 'customer')
+        INSERT INTO accounts (firstname, lastname, full_name, username, email, password, confirm_password, role)
+        VALUES (?, ?, ?, ?, ?, ?, '', 'customer')
     ");
     
     if (!$stmt) {
@@ -190,8 +190,8 @@ function book_reservation($data, $connect2db, &$result, &$resultClass)
                 $hashedPassword = password_hash('LaCorteza2026!', PASSWORD_DEFAULT);
 
                 $stmtAcc = mysqli_prepare($connect2db, "
-                    INSERT INTO accounts (firstname, lastname, full_name, username, email, password, role) 
-                    VALUES (?, ?, ?, ?, ?, ?, 'customer')
+                    INSERT INTO accounts (firstname, lastname, full_name, username, email, password, confirm_password, role) 
+                    VALUES (?, ?, ?, ?, ?, ?, '', 'customer')
                 ");
                 if ($stmtAcc) {
                     mysqli_stmt_bind_param($stmtAcc, "ssssss", $firstname, $lastname, $full_name, $username, $email, $hashedPassword);
