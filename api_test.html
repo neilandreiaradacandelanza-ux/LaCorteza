@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>API Test</title>
+    <style>
+        :root {
+          --bg-page: #f4efe9;                
+          --bg-card: #ffffff;                
+          --color-primary: #6f4e37;        
+          --color-primary-hover: #543a27;   
+          --color-accent: #c68b59;          
+          --color-text: #2c221e;  
+          --color-text-muted: #786c65;     
+          --color-border: #e2d8ce; 
+          --color-error: #9b2c2c;      
+          --color-success: #2f7551;      
+          --radius-sm: 8px;  
+          --radius-md: 14px;
+          --shadow-card: 0 12px 32px rgba(67, 48, 38, 0.08);
+        }
+
+        * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+          font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--bg-page);
+          background-image: radial-gradient(#e0d5c9 1px, transparent 1px);
+          background-size: 20px 20px;
+        }
+
+        .dashboard-card {
+          width: 520px;
+          max-height: 90vh;
+          overflow-y: auto;
+          padding: 36px;
+          background: var(--bg-card);
+          border-radius: var(--radius-md); /* Adjusted from 13% for cleaner edges */
+          box-shadow: var(--shadow-card);
+          border: 1px solid var(--color-border);
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        .dashboard-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .dashboard-card h1 {
+          font-size: 24px;
+          font-weight: 700;
+          color: var(--color-text);
+        }
+
+        .dashboard-card h1 span {
+          color: var(--color-accent);
+        }
+
+        .subtitle {
+          font-size: 13px;
+          color: var(--color-text-muted);
+        }
+
+        .profile-form {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .post-input {
+          border: 1.5px solid var(--color-border);
+          border-radius: var(--radius-sm);
+          padding: 12px 16px;
+          outline: none;
+          font-size: 14px;
+          background-color: #faf7f4;
+          width: 100%;
+          color: var(--color-text);
+          transition: all 0.2s ease;
+          font-family: inherit;
+        }
+
+        .post-input:focus {
+          border-color: var(--color-primary);
+          background-color: #ffffff;
+          box-shadow: 0 0 0 3px rgba(111, 78, 55, 0.12);
+        }
+
+        textarea.post-input {
+          resize: vertical;
+          min-height: 80px;
+        }
+
+        .post-button {
+          padding: 12px 20px;
+          border: none;
+          border-radius: var(--radius-sm);
+          background: var(--color-accent);
+          color: white;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .post-button:hover {
+          background: #b57a48;
+        }
+
+        .post-button:active {
+          transform: scale(0.99);
+        }
+
+        .error-msg {
+          background: #fdf2f2;
+          color: var(--color-error);
+          border: 1px solid #f8b4b4;
+          padding: 10px 14px;
+          border-radius: var(--radius-sm);
+          font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-card">
+        <div class="dashboard-header">
+            <h1>My <span>Notes</span></h1>
+        </div>
+        <p class="subtitle">Test your PHP REST API functionality</p>
+
+        <div class="profile-form">
+            <input type="text" id="title" class="post-input" placeholder="Note Title">
+            <textarea id="content" class="post-input" placeholder="Note Content"></textarea>
+            <button class="post-button" onclick="addNote()">Add Note</button>
+        </div>
+
+        <hr style="border: none; border-top: 1px dashed var(--color-border); margin: 10px 0;">
+
+        <div class="dashboard-header">
+            <h1 style="font-size: 18px;">Saved <span>Notes</span></h1>
+        </div>
+
+        <div id="notesContainer" style="display: flex; flex-direction: column; gap: 14px;"></div>
+    </div>
+
+    <script>
+        async function loadNotes() {
+            const res = await fetch('api/notes.php');
+            const container = document.getElementById('notesContainer');
+            
+            if (res.status === 401) {
+                container.innerHTML = '<div class="error-msg">Please log in first.</div>';
+                return;
+            }
+            
+            const notes = await res.json();
+            container.innerHTML = '';
+            
+            if (notes.length === 0) {
+                container.innerHTML = '<p class="subtitle" style="text-align: center; margin-top: 10px;">No notes found. Create one above!</p>';
+                return;
+            }
+
+            notes.forEach(note => {
+                container.innerHTML += `
+                    <div style="background-color: #faf7f4; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 16px;">
+                        <h4 style="margin-bottom: 6px; color: var(--color-text); font-size: 16px;">${note.title}</h4>
+                        <p style="color: var(--color-text-muted); font-size: 14px; margin-bottom: 16px; white-space: pre-wrap;">${note.content}</p>
+                        <button onclick="deleteNote(${note.id})" style="background: #fdf2f2; color: var(--color-error); border: 1px solid #f8b4b4; padding: 6px 12px; border-radius: var(--radius-sm); font-size: 12px; cursor: pointer; transition: 0.2s;">
+                            Delete
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        async function addNote() {
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            
+            if (!title.trim()) return; // Simple validation
+
+            await fetch('api/notes.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, content })
+            });
+            
+            document.getElementById('title').value = '';
+            document.getElementById('content').value = '';
+            loadNotes();
+        }
+
+        async function deleteNote(id) {
+            await fetch(`api/notes.php?id=${id}`, { method: 'DELETE' });
+            loadNotes();
+        }
+
+        loadNotes();
+    </script>
+</body>
+</html>
