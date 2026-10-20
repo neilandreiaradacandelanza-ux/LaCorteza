@@ -2,6 +2,9 @@ FROM php:8.2-apache
 
 RUN docker-php-ext-install mysqli
 
+# Match XAMPP: buffer output so session_start()/header() still work after stray output.
+RUN printf "output_buffering = 4096\ndate.timezone = Asia/Manila\n" > /usr/local/etc/php/conf.d/app.ini
+
 COPY . /var/www/html/
 
 # Railway can end up with several Apache MPMs enabled ("AH00534: More than one MPM loaded");
