@@ -22,18 +22,30 @@ $connect2db = mysqli_init();
 if (env('DB_SSL') === 'true') {
     $caPath = null;
     if (env('DB_CA_CERT')) {
+        // Repair the PEM if its line breaks were lost when pasted into the hosting dashboard.
+        $cert = trim(str_replace('\n', "\n", env('DB_CA_CERT')));
+        if (strpos($cert, "\n") === false && preg_match('/-----BEGIN CERTIFICATE-----(.+)-----END CERTIFICATE-----/', $cert, $m)) {
+            $cert = "-----BEGIN CERTIFICATE-----\n" . chunk_split(preg_replace('/\s+/', '', $m[1]), 64, "\n") . "-----END CERTIFICATE-----";
+        }
         $caPath = sys_get_temp_dir() . '/aiven-ca.pem';
-        file_put_contents($caPath, env('DB_CA_CERT'));
+        file_put_contents($caPath, $cert . "\n");
     }
     mysqli_ssl_set($connect2db, null, null, $caPath, null, null);
     $flags = $caPath ? MYSQLI_CLIENT_SSL : MYSQLI_CLIENT_SSL | MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT;
-    $connected = @mysqli_real_connect($connect2db, $host, $user, $password, $database, $port, null, $flags);
-} else {
-    $connected = @mysqli_real_connect($connect2db, $host, $user, $password, $database, $port);
+}
+
+// PHP 8.1+ throws on connection failure, so catch it to show a readable message instead of a blank 500.
+try {
+    $connected = @mysqli_real_connect($connect2db, $host, $user, $password, $database, $port, null, $flags ?? 0);
+    $connectError = $connected ? '' : mysqli_connect_error();
+} catch (mysqli_sql_exception $e) {
+    $connected = false;
+    $connectError = $e->getMessage();
 }
 
 if (!$connected) {
-    die("Database connection failed: " . mysqli_connect_error());
+    error_log("Database connection failed ($host:$port): $connectError");
+    die("Database connection failed: " . htmlspecialchars($connectError));
 }
 
 // Alias $conn so all scripts using $conn work without error
