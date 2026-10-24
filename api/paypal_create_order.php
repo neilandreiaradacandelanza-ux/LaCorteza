@@ -17,12 +17,31 @@ if (ob_get_length()) {
     ob_clean();
 }
 
+$user_id = intval($_SESSION['user_id'] ?? 0);
+if ($user_id <= 0) {
+    echo json_encode(['error' => 'Please log in to pay for a reservation.']);
+    exit();
+}
+
 $input = json_decode(file_get_contents('php://input'), true);
 $reservation_id = intval($input['reservation_id'] ?? 0);
-$amount = floatval($input['amount'] ?? 0);
 
-if ($reservation_id <= 0 || $amount <= 0) {
-    echo json_encode(['error' => 'Invalid reservation ID or amount.']);
+// Look up the reservation server-side: it must belong to this customer and still be awaiting payment
+$stmt = $conn->prepare("SELECT total_amount FROM reservations WHERE id = ? AND user_id = ? AND status = 'Pending' LIMIT 1");
+$stmt->bind_param("ii", $reservation_id, $user_id);
+$stmt->execute();
+$reservation = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
+if (!$reservation) {
+    echo json_encode(['error' => 'Reservation not found or no longer awaiting payment.']);
+    exit();
+}
+
+// 50% downpayment, computed from the stored total (never trusted from the browser)
+$amount = round(floatval($reservation['total_amount']) * 0.50, 2);
+if ($amount <= 0) {
+    echo json_encode(['error' => 'This reservation has no amount due.']);
     exit();
 }
 

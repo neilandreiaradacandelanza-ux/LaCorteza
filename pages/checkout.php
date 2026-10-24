@@ -170,10 +170,9 @@ $downpayment_amount = round($total_amount * 0.50, 2);
                 return fetch('../api/paypal_create_order.php', { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' },  
-                    body: JSON.stringify({ 
-                        reservation_id: <?= $reservation_id ?>,
-                        amount: <?= $downpayment_amount ?>
-                    }) 
+                    body: JSON.stringify({
+                        reservation_id: <?= $reservation_id ?>
+                    })
                 }) 
                 .then(res => res.json()) 
                 .then(order => { 
@@ -192,9 +191,8 @@ $downpayment_amount = round($total_amount * 0.50, 2);
                     headers: { 'Content-Type': 'application/json' },  
                     body: JSON.stringify({ 
                         orderID: data.orderID,
-                        reservation_id: <?= $reservation_id ?>,
-                        amount: <?= $downpayment_amount ?>
-                    })  
+                        reservation_id: <?= $reservation_id ?>
+                    })
                 }) 
                 .then(res => res.json()) 
                 .then(result => { 

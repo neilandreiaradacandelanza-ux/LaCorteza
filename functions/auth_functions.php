@@ -124,15 +124,24 @@ function book_reservation($data, $connect2db, &$result, &$resultClass)
     $guest_count      = intval($data['guest_count'] ?? 0);
     $package_type     = trim($data['package_type'] ?? '');
 
-    // 0. CHECK IF DATE/SHIFT IS BLOCKED BY ADMIN
+    // Only accept the shifts offered on the booking form, so the overlap checks below can't be bypassed
+    $whole_day = '24 Hours Exclusive';
+    $allowed_shifts = ['Day Shift (8:00 AM - 5:00 PM)', 'Night Shift (6:00 PM - 12:00 MN)', $whole_day];
+    if (!in_array($time_slot, $allowed_shifts, true)) {
+        $resultClass = "error";
+        $result = "Please choose a valid shift.";
+        return;
+    }
+
+    // 0. CHECK IF DATE/SHIFT IS BLOCKED BY ADMIN (a 24-hour booking is blocked by any blockout on that date)
     $stmtSched = mysqli_prepare($connect2db, "
-        SELECT reason FROM schedules 
-        WHERE blocked_date = ? 
-        AND (time_slot = 'All Shifts' OR time_slot = ?)
+        SELECT reason FROM schedules
+        WHERE blocked_date = ?
+        AND (time_slot = 'All Shifts' OR time_slot = ? OR ? = '$whole_day')
         LIMIT 1
     ");
     if ($stmtSched) {
-        mysqli_stmt_bind_param($stmtSched, "ss", $reservation_date, $time_slot);
+        mysqli_stmt_bind_param($stmtSched, "sss", $reservation_date, $time_slot, $time_slot);
         mysqli_stmt_execute($stmtSched);
         $sched_res = mysqli_stmt_get_result($stmtSched);
 
@@ -147,17 +156,29 @@ function book_reservation($data, $connect2db, &$result, &$resultClass)
         mysqli_stmt_close($stmtSched);
     }
 
-    // 1. CHECK FOR CONFLICTING BOOKINGS
+    // 1. Booking requires a logged-in customer (book-now.php redirects guests to login)
+    $user_id = $_SESSION['user_id'] ?? $_SESSION['user']['id'] ?? null;
+
+    if (!$user_id) {
+        $resultClass = "error";
+        $result = "Please log in to book a reservation.";
+        return;
+    }
+
+    // Serialize bookings so two customers submitting at the same moment can't both pass the conflict check
+    mysqli_query($connect2db, "SELECT GET_LOCK('lacorteza_booking', 10)");
+
+    // 2. CHECK FOR CONFLICTING BOOKINGS (a 24-hour booking overlaps both the day and night shifts)
     $stmtCheck = mysqli_prepare($connect2db, "
-        SELECT id FROM reservations 
-        WHERE reservation_date = ? 
-          AND time_slot = ? 
+        SELECT id FROM reservations
+        WHERE reservation_date = ?
+          AND (time_slot = ? OR time_slot = '$whole_day' OR ? = '$whole_day')
           AND status IN ('Pending', 'Confirmed', 'Paid')
         LIMIT 1
     ");
-    
+
     if ($stmtCheck) {
-        mysqli_stmt_bind_param($stmtCheck, "ss", $reservation_date, $time_slot);
+        mysqli_stmt_bind_param($stmtCheck, "sss", $reservation_date, $time_slot, $time_slot);
         mysqli_stmt_execute($stmtCheck);
         $conflict_result = mysqli_stmt_get_result($stmtCheck);
 
@@ -165,18 +186,10 @@ function book_reservation($data, $connect2db, &$result, &$resultClass)
             $resultClass = "error";
             $result = "Sorry, this date and shift is already booked or pending review. Please choose another schedule.";
             mysqli_stmt_close($stmtCheck);
+            mysqli_query($connect2db, "SELECT RELEASE_LOCK('lacorteza_booking')");
             return;
         }
         mysqli_stmt_close($stmtCheck);
-    }
-
-    // 2. Booking requires a logged-in customer (book-now.php redirects guests to login)
-    $user_id = $_SESSION['user_id'] ?? $_SESSION['user']['id'] ?? null;
-
-    if (!$user_id) {
-        $resultClass = "error";
-        $result = "Please log in to book a reservation.";
-        return;
     }
 
     // 3. Compute total amount
@@ -213,10 +226,12 @@ function book_reservation($data, $connect2db, &$result, &$resultClass)
             $resultClass = "error";
             $result = "Failed to submit reservation: " . mysqli_stmt_error($stmtRes);
             mysqli_stmt_close($stmtRes);
+            mysqli_query($connect2db, "SELECT RELEASE_LOCK('lacorteza_booking')");
             return;
         }
         mysqli_stmt_close($stmtRes);
     }
+    mysqli_query($connect2db, "SELECT RELEASE_LOCK('lacorteza_booking')");
 
     $resultClass = "success";
     $result = "Reservation submitted successfully!";

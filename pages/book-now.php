@@ -250,7 +250,8 @@ $preselected_package =$_GET['package'] ?? $form['package_type'] ?? '';
             if (!selectedDate) return;
 
             const match = blockedSchedules.find(item => {
-                return item.blocked_date === selectedDate && (item.time_slot === 'All Shifts' || item.time_slot === selectedShift);
+                // A 24-hour booking is blocked by any blockout on that date
+                return item.blocked_date === selectedDate && (item.time_slot === 'All Shifts' || item.time_slot === selectedShift || selectedShift === '24 Hours Exclusive');
             });
 
             if (match) {
