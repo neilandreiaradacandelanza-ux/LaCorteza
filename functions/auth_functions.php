@@ -133,6 +133,21 @@ function book_reservation($data, $connect2db, &$result, &$resultClass)
         return;
     }
 
+    // The date picker blocks past dates, but the server must too (a request can be sent without the form)
+    $today = (new DateTime('now', new DateTimeZone('Asia/Manila')))->format('Y-m-d');
+    $date  = DateTime::createFromFormat('Y-m-d', $reservation_date);
+    if (!$date || $date->format('Y-m-d') !== $reservation_date || $reservation_date < $today) {
+        $resultClass = "error";
+        $result = "Please choose a valid date from today onwards.";
+        return;
+    }
+
+    if ($guest_count < 1 || $guest_count > 150) {
+        $resultClass = "error";
+        $result = "The number of guests must be between 1 and 150.";
+        return;
+    }
+
     // 0. CHECK IF DATE/SHIFT IS BLOCKED BY ADMIN (a 24-hour booking is blocked by any blockout on that date)
     $stmtSched = mysqli_prepare($connect2db, "
         SELECT reason FROM schedules
@@ -210,6 +225,14 @@ function book_reservation($data, $connect2db, &$result, &$resultClass)
             }
         }
         mysqli_stmt_close($stmtPkg);
+    }
+
+    // An unknown package would be saved with a ₱0 total
+    if ($total_amount <= 0) {
+        $resultClass = "error";
+        $result = "Please choose a valid package.";
+        mysqli_query($connect2db, "SELECT RELEASE_LOCK('lacorteza_booking')");
+        return;
     }
 
     $status = 'Pending';

@@ -7,6 +7,7 @@
 
     $error = '';
     $success = '';
+    $unverified_email = '';
 
     if (isset($_SESSION['success_msg'])) {
         $success = $_SESSION['success_msg'];
@@ -27,15 +28,19 @@
             $error = "Please fill in all fields.";
         } else {
             // Select role along with account details
-            $stmt = mysqli_prepare($connect2db, "SELECT id, firstname, lastname, email, password, role FROM accounts WHERE username = ? OR email = ? ORDER BY id LIMIT 1");
+            $stmt = mysqli_prepare($connect2db, "SELECT id, firstname, lastname, email, password, role, email_verified_at FROM accounts WHERE username = ? OR email = ? ORDER BY id LIMIT 1");
             mysqli_stmt_bind_param($stmt, "ss", $login_input, $login_input);
             mysqli_stmt_execute($stmt);
             $result = mysqli_stmt_get_result($stmt);
 
             if ($user = mysqli_fetch_assoc($result)) {
-                if (password_verify($password, $user['password'])) {
-                    
-                    $userRole = strtolower($user['role'] ?? 'customer');
+                $userRole = strtolower($user['role'] ?? 'customer');
+
+                // Customers must click the link in their verification email before they can log in (admins are exempt)
+                if (password_verify($password, $user['password']) && $userRole !== 'admin' && empty($user['email_verified_at'])) {
+                    $unverified_email = $user['email'];
+                    $error = "Please verify your email before logging in. Check your inbox for the link we sent.";
+                } elseif (password_verify($password, $user['password'])) {
 
                     // Fresh session ID on login, and drop any leftover session from a previous account
                     session_regenerate_id(true);
@@ -68,8 +73,10 @@
                     }
                 }
             }
-            
-            $error = "Invalid username or password.";
+
+            if (empty($error)) {
+                $error = "Invalid username or password.";
+            }
         }
     }
     ?>
@@ -82,31 +89,69 @@
         <link rel="stylesheet" href="../css/style.css?v=<?php echo time(); ?>">
         <link rel="icon" type="image/png" href="../css/images/logo.png">
     </head>
-    <body>
-        <div class="login-card">
-            <img src="../css/images/logo.png" alt="La Corteza Logo" class="brand-logo-img" style="margin: 0 auto;">
-            <h1>Welcome Back</h1>
+    <body class="auth-page">
+        <main class="auth-split">
+            <!-- Photo side: shows the venue instead of an empty card -->
+            <aside class="auth-split-photo">
+                <a href="dashboard.php" class="auth-back">&larr; Back to home</a>
+                <div class="auth-photo-caption">
+                    <span class="auth-eyebrow">La Corteza Pool &amp; Venue</span>
+                    <h2>Your day by the water starts here.</h2>
+                </div>
+            </aside>
 
-            <?php if (!empty($success)): ?>
-                <div class="success"><?php echo htmlspecialchars($success); ?></div>
-            <?php endif; ?>
+            <section class="auth-split-form">
+                <img src="../css/images/logo.png" alt="La Corteza Logo" class="auth-logo">
+                <h1>Welcome back</h1>
+                <p class="auth-subtitle">Log in to book and manage your reservations.</p>
 
-            <?php if (!empty($error)): ?>
-                <div class="error"><?php echo htmlspecialchars($error); ?></div>
-            <?php endif; ?>
+                <?php if (!empty($success)): ?>
+                    <div class="success"><?php echo htmlspecialchars($success); ?></div>
+                <?php endif; ?>
 
-            <form action="login.php" method="POST" style="display: flex; flex-direction: column; gap: 12px;">
-                <input type="text" name="login_input" placeholder="Username or Email" required>
-                <input type="password" name="password" placeholder="Password" required>
-                <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($redirect); ?>">
+                <?php if (!empty($error)): ?>
+                    <div class="error">
+                        <?php echo htmlspecialchars($error); ?>
+                        <?php if ($unverified_email): ?>
+                            <a href="verify-email.php?email=<?php echo urlencode($unverified_email); ?>">Resend the verification email</a>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
 
-                <button type="submit">Login</button>
-            </form>
+                <form action="login.php" method="POST" class="auth-form">
+                    <div class="auth-field">
+                        <label for="login_input">Username or email</label>
+                        <input type="text" id="login_input" name="login_input" value="<?php echo htmlspecialchars($_POST['login_input'] ?? ''); ?>" autocomplete="username" required autofocus>
+                    </div>
 
-            <div class="links">
-                <a href="forgot-password.php">Forgot Password?</a>
-                <a href="register.php<?php echo $redirect ? '?redirect=' . urlencode($redirect) : ''; ?>">Register here</a>
-            </div>
-        </div>
+                    <div class="auth-field">
+                        <label for="password">Password</label>
+                        <div class="auth-password">
+                            <input type="password" id="password" name="password" autocomplete="current-password" required>
+                            <button type="button" class="auth-toggle" aria-label="Show password" onclick="togglePassword(this)">Show</button>
+                        </div>
+                        <a href="forgot-password.php" class="auth-forgot">Forgot password?</a>
+                    </div>
+                    <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($redirect); ?>">
+
+                    <button type="submit" class="auth-submit">Log in</button>
+                </form>
+
+                <p class="auth-switch">
+                    New to La Corteza?
+                    <a href="register.php<?php echo $redirect ? '?redirect=' . urlencode($redirect) : ''; ?>">Create an account</a>
+                </p>
+            </section>
+        </main>
+
+        <script>
+            function togglePassword(btn) {
+                const input = btn.parentElement.querySelector('input');
+                const show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+                btn.textContent = show ? 'Hide' : 'Show';
+                btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+            }
+        </script>
     </body>
     </html>

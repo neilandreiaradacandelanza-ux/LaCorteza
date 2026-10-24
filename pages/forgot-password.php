@@ -7,12 +7,9 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../db/connect.php';
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../functions/mail_functions.php';
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-$message = '';
+$sent = isset($_GET['sent']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['email'])) {
     $email = filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL);
@@ -40,41 +37,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['email'])) {
             mysqli_stmt_execute($insertStmt);
             mysqli_stmt_close($insertStmt);
 
-            // 5. Build accurate reset link
-            $appUrl = rtrim(env('APP_URL', "http://localhost/lacorteza"), '/');
-            $link = $appUrl . "/pages/reset-password.php?token=" . urlencode($token);
+            // 5. Build the reset link from this site's own address (APP_URL, or the current request when unset)
+            $link = app_url() . "/pages/reset-password.php?token=" . urlencode($token);
 
             // 6. Send Email via PHPMailer
-            $mail = new PHPMailer(true);
-            try {
-                $mail->isSMTP();
-                $mail->Host       = 'smtp.gmail.com';
-                $mail->SMTPAuth   = true;
-                $mail->Username   = env('MAIL_USERNAME');
-                $mail->Password   = env('MAIL_PASSWORD'); // Google App Password
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                $mail->Port       = 587;
-
-                $mail->setFrom(env('MAIL_USERNAME'), 'La Corteza Resort');
-                $mail->addAddress($email);
-                $mail->isHTML(true);
-                $mail->Subject = 'Password Reset Request - La Corteza';
-                $mail->Body    = "
-                    <div style='font-family: Arial, sans-serif; padding: 20px; color: #2c3e2e;'>
-                        <h2>Password Reset Request</h2>
-                        <p>We received a request to reset your password for your La Corteza account.</p>
-                        <p>Click the button below to update your password (link expires in 1 hour):</p>
-                        <p style='margin: 20px 0;'>
-                            <a href='{$link}' style='background-color: #556b2f; color: #ffffff; padding: 10px 18px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Reset Password</a>
-                        </p>
-                        <p style='font-size: 12px; color: #666;'>If you did not make this request, you can safely ignore this email.</p>
-                    </div>
-                ";
-
-                $mail->send();
-            } catch (Exception $e) {
-                error_log('Mailer error: ' . $mail->ErrorInfo);
-            }
+            send_mail($email, 'Password Reset Request - La Corteza', email_template(
+                'Password Reset Request',
+                'We received a request to reset the password for your La Corteza account. Click the button below to choose a new password (link expires in 1 hour):',
+                'Reset Password',
+                $link,
+                'If you did not make this request, you can safely ignore this email.'
+            ));
         }
         mysqli_stmt_close($stmt);
     }
@@ -84,10 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['email'])) {
     exit;
 }
 
-if (isset($_GET['sent'])) {
-    // Generic response message for security
-    $message = '<p style="color: green; text-align: center; margin-bottom: 12px;">If that email exists, a reset link has been sent to your inbox.</p>';
-}
 ?>
 
 <!DOCTYPE html>
@@ -99,22 +68,49 @@ if (isset($_GET['sent'])) {
     <link rel="stylesheet" href="../css/style.css?v=<?php echo time(); ?>">
     <link rel="icon" type="image/png" href="../css/images/logo.png">
 </head>
-<body>
-    <div class="login-card">
-        <img src="../css/images/logo.png" alt="La Corteza Logo" class="brand-logo-img" style="margin: 0 auto;">
-        <h1>Reset Password</h1>
-        <p class="subtitle" style="text-align: center; margin-bottom: 16px;">Enter your account email below to request a reset link.</p>
+<body class="auth-page">
+    <main class="auth-split">
+        <aside class="auth-split-photo">
+            <a href="dashboard.php" class="auth-back">&larr; Back to home</a>
+            <div class="auth-photo-caption">
+                <span class="auth-eyebrow">La Corteza Pool &amp; Venue</span>
+                <h2>Locked out? We'll get you back in.</h2>
+            </div>
+        </aside>
 
-        <?php if (!empty($message)) echo $message; ?>
+        <section class="auth-split-form">
+            <img src="../css/images/logo.png" alt="La Corteza Logo" class="auth-logo">
 
-        <form action="forgot-password.php" method="POST" style="display: flex; flex-direction: column; gap: 12px;">
-            <input type="email" name="email" placeholder="Email Address" required>
-            <button type="submit">Submit Request</button>
-        </form>
+            <?php if ($sent): ?>
+                <!-- Generic response for security: never reveal whether the email has an account -->
+                <div class="auth-status">
+                    <div class="auth-status-icon">&#9993;</div>
+                    <h1>Check your email</h1>
+                    <p>If that email belongs to an account, we've sent a link to reset your password. The link expires in 1 hour.</p>
+                    <a href="login.php" class="auth-submit">Back to log in</a>
+                </div>
+                <p class="auth-switch">
+                    Didn't get it?
+                    <a href="forgot-password.php">Send another link</a>
+                </p>
+            <?php else: ?>
+                <h1>Forgot password?</h1>
+                <p class="auth-subtitle">Enter your account email and we'll send you a link to reset it.</p>
 
-        <div class="links single" style="margin-top: 16px; text-align: center;">
-            <a href="login.php">Back to Login</a>
-        </div>
-    </div>
+                <form action="forgot-password.php" method="POST" class="auth-form">
+                    <div class="auth-field">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" autocomplete="email" required autofocus>
+                    </div>
+                    <button type="submit" class="auth-submit">Send reset link</button>
+                </form>
+
+                <p class="auth-switch">
+                    Remembered it?
+                    <a href="login.php">Back to log in</a>
+                </p>
+            <?php endif; ?>
+        </section>
+    </main>
 </body>
 </html>

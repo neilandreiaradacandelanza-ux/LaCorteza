@@ -134,10 +134,368 @@ body.auth-page {
   border: 1px solid rgba(168, 50, 50, 0.2);
 }
 
+.error a,
+.success a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
 .success {
   background-color: var(--color-water-aqua-light);
   color: var(--color-success);
   border: 1px solid var(--color-water-aqua);
+}
+
+/* ------------------ SPLIT LOGIN (photo + form) ------------------ */
+.auth-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  width: calc(100% - 32px);
+  max-width: 920px;
+  min-height: 560px;
+  margin: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-auth);
+  overflow: hidden;
+}
+
+.auth-split-photo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 28px;
+  color: #ffffff;
+  background:
+    linear-gradient(180deg, rgba(20, 30, 8, 0.35) 0%, rgba(20, 30, 8, 0) 30%, rgba(20, 30, 8, 0.7) 100%),
+    url('images/2.jpg') center 60% / cover no-repeat;
+}
+
+/* Register shows the event pavilion instead of the pool */
+.auth-split-photo.photo-venue {
+  background:
+    linear-gradient(180deg, rgba(20, 30, 8, 0.35) 0%, rgba(20, 30, 8, 0) 30%, rgba(20, 30, 8, 0.7) 100%),
+    url('images/6.jpg') center 40% / cover no-repeat;
+}
+
+/* Status panels (link sent, password updated, link expired) */
+.auth-status {
+  text-align: center;
+  padding: 8px 0;
+}
+
+.auth-status-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: var(--color-water-aqua-light);
+  color: var(--color-success);
+}
+
+.auth-status-icon.is-error {
+  background: #fde8e8;
+  color: var(--color-error);
+}
+
+.auth-status h1 {
+  margin-bottom: 10px;
+}
+
+.auth-status p {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.auth-status .auth-submit {
+  display: block;
+  text-decoration: none;
+}
+
+.auth-back {
+  align-self: flex-start;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(4px);
+  transition: background-color 0.2s ease;
+}
+
+.auth-back:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.auth-eyebrow {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-sun-yellow);
+  margin-bottom: 8px;
+}
+
+.auth-photo-caption h2 {
+  font-size: 28px;
+  line-height: 1.25;
+  font-weight: 600;
+  max-width: 320px;
+}
+
+.auth-split-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px 44px;
+}
+
+.auth-logo {
+  width: 56px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+.auth-split-form h1 {
+  color: var(--color-dark-olive);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.auth-subtitle {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  margin: 6px 0 28px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-form label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 6px;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-bottom: 16px;
+}
+
+/* Two fields side by side (e.g. first/last name), stacked on phones */
+.auth-form-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.auth-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.auth-hint {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 6px;
+}
+
+/* "Forgot password?" sits under the password field, right-aligned */
+.auth-forgot {
+  align-self: flex-end;
+  margin-top: 8px;
+}
+
+.auth-forgot,
+.auth-label-row a,
+.auth-switch a {
+  color: var(--color-dark-olive);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-forgot:hover,
+.auth-label-row a:hover,
+.auth-switch a:hover {
+  color: var(--color-palm-green-hover);
+  text-decoration: underline;
+}
+
+.auth-form input[type="text"],
+.auth-form input[type="email"],
+.auth-form input[type="password"] {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1.5px solid var(--color-border);
+  background-color: #ffffff;
+  border-radius: 10px;
+  font-size: 15px;
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-form input[type="text"]:focus,
+.auth-form input[type="email"]:focus,
+.auth-form input[type="password"]:focus {
+  border-color: var(--color-palm-green);
+  box-shadow: 0 0 0 4px rgba(136, 176, 53, 0.15);
+}
+
+.auth-password {
+  position: relative;
+}
+
+.auth-password input {
+  padding-right: 64px !important;
+}
+
+.auth-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.auth-toggle:hover {
+  color: var(--color-dark-olive);
+  background: var(--color-water-aqua-light);
+}
+
+.auth-submit {
+  margin-top: 8px;
+  padding: 14px;
+  background-color: var(--color-palm-green);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.auth-submit:hover {
+  background-color: var(--color-palm-green-hover);
+}
+
+.auth-submit:active {
+  transform: translateY(1px);
+}
+
+.auth-switch {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+/* Compact variant for longer forms (registration) so the card fits on a laptop screen without scrolling */
+.auth-split.auth-compact {
+  max-width: 860px;
+  min-height: 0;
+  margin: 24px auto;
+}
+
+.auth-compact .auth-split-form {
+  padding: 32px 40px;
+}
+
+.auth-compact .auth-logo {
+  width: 44px;
+  margin-bottom: 12px;
+}
+
+.auth-compact .auth-split-form h1 {
+  font-size: 26px;
+}
+
+.auth-compact .auth-subtitle {
+  margin-bottom: 20px;
+}
+
+.auth-compact .auth-field {
+  margin-bottom: 12px;
+}
+
+.auth-compact .auth-form label {
+  margin-bottom: 4px;
+}
+
+.auth-compact .auth-form input[type="text"],
+.auth-compact .auth-form input[type="email"],
+.auth-compact .auth-form input[type="password"] {
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.auth-compact .auth-submit {
+  padding: 12px;
+}
+
+.auth-compact .auth-switch {
+  margin-top: 20px;
+  padding-top: 16px;
+}
+
+.auth-compact .auth-photo-caption h2 {
+  font-size: 24px;
+}
+
+/* Phones: the photo becomes a short banner above the form */
+@media (max-width: 760px) {
+  .auth-split {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+    margin: 16px auto;
+  }
+
+  .auth-split-photo {
+    min-height: 200px;
+    padding: 20px;
+  }
+
+  .auth-photo-caption h2 {
+    font-size: 22px;
+  }
+
+  .auth-split-form {
+    padding: 32px 24px;
+  }
+
+  .auth-form-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
 }
 
 /* ------------------ NAVIGATION BAR ------------------ */
@@ -158,6 +516,17 @@ body.auth-page {
   top: 0;
   z-index: 100;
   box-shadow: 0 4px 12px rgba(136, 176, 53, 0.08);
+}
+
+/* Admin bar: three equal outer columns so the links sit in the true center,
+   no matter how wide the logo or the administrator name is */
+.navbar.navbar-centered {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+}
+
+.navbar.navbar-centered .nav-actions {
+  justify-self: end;
 }
 
 .nav-brand {
@@ -232,6 +601,89 @@ body.auth-page {
 
 .logout-btn:hover {
   background-color: #fdf2f2;
+}
+
+/* ------------------ HAMBURGER MENU (small screens) ------------------ */
+.nav-toggle {
+  display: none;
+  width: 44px;
+  height: 44px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.nav-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-dark-olive);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* The three bars turn into an X while the menu is open */
+.nav-open .nav-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-open .nav-toggle span:nth-child(2) { opacity: 0; }
+.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+@media (max-width: 960px) {
+  .navbar,
+  .navbar.navbar-centered {
+    display: flex;
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 72px;
+    padding: 10px 20px;
+  }
+
+  .brand-logo-img {
+    height: 56px;
+  }
+
+  .nav-toggle {
+    display: flex;
+    margin-left: auto;
+  }
+
+  /* Links and account actions are hidden until the hamburger is tapped, then drop down full width */
+  .nav-links,
+  .nav-actions {
+    display: none;
+    width: 100%;
+  }
+
+  .navbar.nav-open .nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 10px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .nav-links a,
+  .nav-links a:hover,
+  .nav-links a.active {
+    padding: 13px 12px;
+    font-size: 15px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .nav-links a.active {
+    box-shadow: inset 3px 0 0 var(--color-palm-green);
+  }
+
+  .navbar.nav-open .nav-actions,
+  .navbar.navbar-centered.nav-open .nav-actions {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 12px 6px;
+  }
 }
 
 /* ------------------ MAIN CONTAINER ------------------ */
@@ -319,7 +771,7 @@ body.auth-page {
 
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(310px, 100%), 1fr));
   gap: 20px;
 }
 
@@ -1004,6 +1456,42 @@ body.auth-page {
   .addons-grid,
   .form-grid-2 {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .dashboard-container {
+    width: auto;
+    margin: 20px 16px 40px;
+    gap: 20px;
+  }
+
+  /* Page title banners: buttons go under the title instead of beside it */
+  .welcome-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 22px 20px;
+    border-left-width: 5px;
+  }
+
+  .welcome-banner h1 {
+    font-size: 22px;
+  }
+
+  .banner-actions,
+  .welcome-banner .btn-primary {
+    width: 100%;
+    text-align: center;
+  }
+
+  .booking-card {
+    padding: 20px 18px;
+  }
+
+  /* Admin tables (inside their overflow-x wrappers) keep readable columns and scroll sideways instead of squeezing */
+  .booking-card div[style*="overflow-x"] > table {
+    min-width: 680px;
   }
 }
 

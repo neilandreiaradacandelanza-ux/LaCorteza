@@ -155,12 +155,21 @@ function feature_label($feature) {
 <body>
 
 <!-- NAVBAR (LOGO & LOGOUT ONLY) -->
-    <header class="navbar">
+    <header class="navbar navbar-centered">
         <div class="nav-brand">
             <a href="dashboard.php" class="logo-link">
                 <img src="../css/images/logo.png" alt="La Corteza Logo" class="brand-logo-img">
             </a>
         </div>
+        <!-- Hamburger: shown on small screens, opens the links and account actions -->
+        <button type="button" class="nav-toggle" aria-label="Open menu" aria-expanded="false" onclick="const bar = this.closest('.navbar'); const open = bar.classList.toggle('nav-open'); this.setAttribute('aria-expanded', open); this.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');">
+            <span></span><span></span><span></span>
+        </button>
+        <nav class="nav-links">
+            <a href="dashboard.php">Dashboard</a>
+            <a href="packages.php" class="active">Rates &amp; Packages</a>
+             <a href="schedules.php"> Schedules</a>
+        </nav>
         <div class="nav-actions">
             <span class="user-id">👤 Administrator (<?php echo htmlspecialchars($_SESSION['admin_name'] ?? 'Admin'); ?>)</span>
             <a href="logout.php" class="logout-btn">Logout</a>
@@ -173,10 +182,6 @@ function feature_label($feature) {
             <div>
                 <h1>Manage <span>Rates &amp; Packages</span></h1>
                 <p>Add, edit, or remove the packages customers can book.</p>
-            </div>
-            <div class="banner-actions">
-                <a href="schedules.php" class="btn-outline-sm">📅 Blackout Schedules</a>
-                <a href="dashboard.php" class="btn-outline-sm">&larr; Back to Dashboard</a>
             </div>
         </div>
 

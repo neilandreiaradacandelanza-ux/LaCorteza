@@ -21,6 +21,10 @@ if (session_status() === PHP_SESSION_NONE) {
                 <img src="../css/images/logo.png" alt="La Corteza Pool & Venue" class="brand-logo-img">
             </a>
         </div>
+        <!-- Hamburger: shown on small screens, opens the links and account actions -->
+        <button type="button" class="nav-toggle" aria-label="Open menu" aria-expanded="false" onclick="const bar = this.closest('.navbar'); const open = bar.classList.toggle('nav-open'); this.setAttribute('aria-expanded', open); this.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');">
+            <span></span><span></span><span></span>
+        </button>
         <nav class="nav-links">
             <a href="dashboard.php">Dashboard</a>
             <a href="book-now.php">Book Now</a>
@@ -30,7 +34,7 @@ if (session_status() === PHP_SESSION_NONE) {
         </nav>
         <div class="nav-actions">
             <?php if (isset($_SESSION['user_id'])): ?>
-                <span class="user-id">Account ID: #<?php echo htmlspecialchars($_SESSION['user_id']); ?></span>
+                <span class="user-id"><?php echo htmlspecialchars(trim($_SESSION['full_name'] ?? '') ?: 'My Account'); ?></span>
                 <a href="logout.php" class="logout-btn">Logout</a>
             <?php else: ?>
                 <a href="login.php" class="btn-primary" style="padding: 8px 16px;">Login</a>

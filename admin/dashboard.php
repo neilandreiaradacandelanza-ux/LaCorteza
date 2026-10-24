@@ -70,12 +70,21 @@ $result = $conn->query($query);
 <body>
 
     <!-- TOP NAVBAR -->
-    <header class="navbar">
+    <header class="navbar navbar-centered">
         <div class="nav-brand">
             <a href="dashboard.php" class="logo-link">
                 <img src="../css/images/logo.png" alt="La Corteza Logo" class="brand-logo-img">
             </a>
         </div>
+        <!-- Hamburger: shown on small screens, opens the links and account actions -->
+        <button type="button" class="nav-toggle" aria-label="Open menu" aria-expanded="false" onclick="const bar = this.closest('.navbar'); const open = bar.classList.toggle('nav-open'); this.setAttribute('aria-expanded', open); this.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');">
+            <span></span><span></span><span></span>
+        </button>
+        <nav class="nav-links">
+            <a href="dashboard.php" class="active">Dashboard</a>
+            <a href="packages.php">Rates &amp; Packages</a>
+            <a href="schedules.php"> Schedules</a>
+        </nav>
         <div class="nav-actions">
             <span class="user-id">👤 Administrator (<?php echo htmlspecialchars($_SESSION['admin_name'] ?? 'System Administrator'); ?>)</span>
             <a href="logout.php" class="logout-btn">Logout</a>
@@ -89,10 +98,6 @@ $result = $conn->query($query);
             <div>
                 <h1>Reservation <span>Management</span></h1>
                 <p>Overview of all resort bookings and status controls.</p>
-            </div>
-            <div class="banner-actions">
-                <a href="schedules.php" class="btn-outline-sm">📅 Blackout Schedules</a>
-                <a href="packages.php" class="btn-outline-sm">🏷️ Manage Rates & Packages &rarr;</a>
             </div>
         </div>
 

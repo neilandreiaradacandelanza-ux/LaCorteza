@@ -56,12 +56,21 @@ $blocked_schedules = $conn->query("SELECT * FROM schedules ORDER BY blocked_date
 <body>
 
     <!-- TOP NAVBAR -->
-    <header class="navbar">
+    <header class="navbar navbar-centered">
         <div class="nav-brand">
             <a href="dashboard.php" class="logo-link">
                 <img src="../css/images/logo.png" alt="La Corteza Logo" class="brand-logo-img">
             </a>
         </div>
+        <!-- Hamburger: shown on small screens, opens the links and account actions -->
+        <button type="button" class="nav-toggle" aria-label="Open menu" aria-expanded="false" onclick="const bar = this.closest('.navbar'); const open = bar.classList.toggle('nav-open'); this.setAttribute('aria-expanded', open); this.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');">
+            <span></span><span></span><span></span>
+        </button>
+        <nav class="nav-links">
+            <a href="dashboard.php">Dashboard</a>
+            <a href="packages.php">Rates &amp; Packages</a>
+            <a href="schedules.php"> Schedules</a>
+        </nav>
         <div class="nav-actions">
             <span class="user-id">👤 Administrator (<?php echo htmlspecialchars($_SESSION['admin_name'] ?? 'System Administrator'); ?>)</span>
             <a href="logout.php" class="logout-btn">Logout</a>
@@ -73,12 +82,8 @@ $blocked_schedules = $conn->query("SELECT * FROM schedules ORDER BY blocked_date
         <!-- HEADER BANNER -->
         <div class="welcome-banner">
             <div>
-                <h1>Manage <span>Blackout Dates</span></h1>
+                <h1>Manage <span>Schedule Closures & Maintenance</span></h1>
                 <p>Block specific dates or time slots for maintenance, private events, or venue unavailability.</p>
-            </div>
-            <div class="banner-actions">
-                <a href="dashboard.php" class="btn-outline-sm">&larr; Back to Dashboard</a>
-                <a href="packages.php" class="btn-outline-sm">🏷️ Manage Rates & Packages &rarr;</a>
             </div>
         </div>
 
@@ -115,7 +120,7 @@ $blocked_schedules = $conn->query("SELECT * FROM schedules ORDER BY blocked_date
 
                 <div class="form-group">
                     <button type="submit" class="logout-btn" style="background: var(--color-dark-olive); color: white; border: none; padding: 10px 16px; cursor: pointer; border-radius: 6px; font-weight: 600; height: 38px;">
-                        🚫 Save Blockout Date
+                        🚫 Save Unavailable Date
                     </button>
                 </div>
             </form>

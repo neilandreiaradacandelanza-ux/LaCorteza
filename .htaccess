@@ -1,0 +1,13 @@
+# Block files that must never be downloaded from the website:
+# .env (passwords and API keys), dot-files like .git, SQL dumps, Composer and docs files
+<FilesMatch "^\.|\.(sql|md|lock|log)$|^composer\.json$|^Dockerfile$">
+    Require all denied
+</FilesMatch>
+
+# Debug pages used only during development
+<FilesMatch "^(test_session\.php|api_test\.html)$">
+    Require all denied
+</FilesMatch>
+
+# Don't list folder contents (e.g. /vendor/, /db/) when there is no index page
+Options -Indexes

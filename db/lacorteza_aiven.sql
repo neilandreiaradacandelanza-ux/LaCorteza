@@ -37,6 +37,9 @@ CREATE TABLE `accounts` (
   `password` varchar(255) NOT NULL,
   `confirm_password` varchar(255) NOT NULL,
   `role` varchar(20) DEFAULT 'customer',
+  `email_verified_at` datetime DEFAULT NULL,
+  `verification_token` varchar(64) DEFAULT NULL,
+  `verification_expires` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -56,6 +59,9 @@ INSERT INTO `accounts` (`id`, `full_name`, `firstname`, `lastname`, `username`, 
 (13, NULL, 'Jaira', 'Pang-an', 'jajaa', 'Jaira143@gmail.com', '$2y$10$S6qHBSL6.B5yoxInR28LaeSfGtMP27MMI5xvCKgufe4XW2BIYel/W', '', 'customer'),
 (17, NULL, 'Edrick Miguel', 'Delacruz', 'migze', 'migzedelacruz@gmail.com', '$2y$10$OO9n5jPNywzP23QQRphw6OhprWx.06ZfcuxAhz0JwM4uDw0QdpFVK', '', 'customer'),
 (18, NULL, 'Xinfuuu', 'Pogi', 'Xinfuuuuuu', 'xinfu@gmail.com', '$2y$10$k3I5X0WIUNHL6ZRDJos6j.5lvTM/iIMmZUF7dhjDDVHPqRrbbjI6K', '', 'customer');
+
+-- Sample accounts count as already verified
+UPDATE `accounts` SET `email_verified_at` = NOW();
 
 -- --------------------------------------------------------
 
